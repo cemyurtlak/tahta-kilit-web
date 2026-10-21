@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Tahta Açma Kodu</title>
+<style>
+  :root{
+    --arka:#0b1020; --kart:#161c35; --vurgu:#4f8cff; --yazi:#eef2ff;
+    --soluk:#8893b8; --cizgi:#2a3157; --ok:#39d98a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--arka); color:var(--yazi);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:20px 16px 40px;
+  }
+  .kutu{width:100%; max-width:420px}
+  h1{font-size:20px; margin:8px 0 4px; text-align:center}
+  .aciklama{color:var(--soluk); font-size:13px; text-align:center; margin:0 0 18px}
+  .kart{
+    background:var(--kart); border:1px solid var(--cizgi);
+    border-radius:18px; padding:20px 18px; margin-bottom:16px;
+  }
+  label{display:block; font-size:13px; color:var(--soluk); margin-bottom:8px}
+  input[type=text]{
+    width:100%; font-size:34px; letter-spacing:10px; text-align:center;
+    font-family:"Consolas",monospace; font-weight:700;
+    color:var(--yazi); background:var(--arka);
+    border:2px solid var(--cizgi); border-radius:14px; padding:14px 10px;
+    outline:none;
+  }
+  input[type=text]:focus{border-color:var(--vurgu)}
+  .sonuc-baslik{color:var(--soluk); font-size:13px; text-align:center; margin:4px 0 6px}
+  .sonuc{
+    font-family:"Consolas",monospace; font-weight:800; letter-spacing:14px;
+    font-size:60px; text-align:center; color:var(--ok); min-height:70px;
+    line-height:1.1;
+  }
+  .sonuc.bos{color:var(--soluk); font-size:20px; letter-spacing:normal; font-weight:400}
+  .tuslar{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px}
+  button{
+    font-size:26px; font-weight:700; padding:16px 0;
+    border:none; border-radius:14px; cursor:pointer; color:var(--yazi);
+    background:#222a4a; transition:transform .05s;
+  }
+  button:active{transform:scale(.96)}
+  button.vurgu{background:var(--vurgu); color:#fff}
+  button.sil{background:#3a2140; color:#ffb3c1; font-size:18px}
+  .not{color:var(--soluk); font-size:12px; text-align:center; margin-top:14px; line-height:1.5}
+</style>
+</head>
+<body>
+  <div class="kutu">
+    <h1>Tahta Açma Kodu</h1>
+    <p class="aciklama">Tahtada görünen kodu girin, açma kodunu alın.</p>
+
+    <div class="kart">
+      <label>Tahtadaki kod</label>
+      <input id="giris" type="text" inputmode="none" readonly placeholder="----">
+
+      <div class="tuslar">
+        <button data-d="1">1</button>
+        <button data-d="2">2</button>
+        <button data-d="3">3</button>
+        <button data-d="4">4</button>
+        <button data-d="5">5</button>
+        <button data-d="6">6</button>
+        <button data-d="7">7</button>
+        <button data-d="8">8</button>
+        <button data-d="9">9</button>
+        <button class="sil" id="sil">Sil</button>
+        <button data-d="0">0</button>
+        <button class="vurgu" id="temizle">C</button>
+      </div>
+    </div>
+
+    <div class="kart">
+      <div class="sonuc-baslik">Tahtaya girilecek açma kodu</div>
+      <div id="sonuc" class="sonuc bos">kodu girin</div>
+    </div>
+
+    <p class="not">
+      Açma kodunu tahtadaki koddan otomatik hesaplar. İnternet gerektirmez.
+    </p>
+  </div>
+
+<script>
+  // Bu diziler tahta programındaki ayarlar.py ile AYNI olmalı.
+  var AGIRLIK = [7, 3, 9, 5];
+  var KOMSU   = [2, 8, 4, 6];
+  var GIZLI   = [3, 1, 7, 9];
+
+  function cozumKodu(tahtaKodu){
+    var d = [];
+    for(var i=0;i<tahtaKodu.length;i++){
+      var r = parseInt(tahtaKodu[i],10);
+      if(!isNaN(r)) d.push(r);
+    }
+    var n = d.length;
+    if(n === 0) return "";
+    var toplam = 0;
+    for(var j=0;j<n;j++) toplam += d[j];
+    var s = "";
+    for(var i=0;i<n;i++){
+      var w = AGIRLIK[i % AGIRLIK.length];
+      var x = KOMSU[i % KOMSU.length];
+      var k = GIZLI[i % GIZLI.length];
+      var v = d[i]*w + d[(i+1) % n]*x + toplam + k;
+      s += ((v % 10) + 10) % 10;
+    }
+    return s;
+  }
+
+  var giris = document.getElementById("giris");
+  var sonuc = document.getElementById("sonuc");
+
+  function guncelle(){
+    var v = giris.value;
+    if(v.length === 0){
+      sonuc.textContent = "kodu girin";
+      sonuc.className = "sonuc bos";
+    } else {
+      sonuc.textContent = cozumKodu(v);
+      sonuc.className = "sonuc";
+    }
+  }
+
+  document.querySelectorAll("button[data-d]").forEach(function(b){
+    b.addEventListener("click", function(){
+      if(giris.value.length < 8){ giris.value += b.getAttribute("data-d"); guncelle(); }
+    });
+  });
+  document.getElementById("sil").addEventListener("click", function(){
+    giris.value = giris.value.slice(0,-1); guncelle();
+  });
+  document.getElementById("temizle").addEventListener("click", function(){
+    giris.value = ""; guncelle();
+  });
+
+  guncelle();
+</script>
+</body>
+</html>
